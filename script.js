@@ -1,50 +1,74 @@
-let currentTitle = ''; 
+let currentTitle = '';
+const taskData = {};
 
-//For "Add Title" button
-document.getElementById('addTitle').addEventListener('click', function() {
-    let titleInput = document.getElementById('groupTitle'); 
+const get = id => document.getElementById(id);
+const titleInput = get('groupTitle');
+const taskInput = get('taskInput');
+const taskGroups = get('taskGroups');
 
-    if (titleInput.value.trim() !== "") {
-        currentTitle = titleInput.value.trim(); 
+get('addTitle').addEventListener('click', () => {
+    const title = titleInput.value.trim();
+    if (!title) return alert("Enter a valid title!");
 
-        let taskGroupsContainer = document.getElementById('taskGroups');
-        let existingGroup = document.getElementById(currentTitle);
+    currentTitle = title;
 
-        // If group does not exist
-        if (!existingGroup) {
-            let group = document.createElement('div'); 
-            group.id = currentTitle;
-            let title = document.createElement('h3'); 
-            title.textContent = currentTitle;
-            group.appendChild(title);
+    if (!taskData[title]) {
+        taskData[title] = [];
 
-            let taskList = document.createElement('ul');
-            group.appendChild(taskList);
+        const group = document.createElement('div');
+        group.id = title;
 
-            taskGroupsContainer.appendChild(group);
-        }
+        const titleElement = document.createElement('h3');
+        titleElement.textContent = title;
 
-        titleInput.value = "";
-    } else {
-        alert("Please enter a valid title!");
+        const ul = document.createElement('ul');
+        group.appendChild(titleElement);
+        group.appendChild(ul);
+        taskGroups.appendChild(group);
     }
+
+    titleInput.value = '';
 });
 
-// For "Add Task" button
-document.getElementById('addTask').addEventListener('click', function() {
-    let taskInput = document.getElementById('taskInput'); 
+get('addTask').addEventListener('click', () => {
+    const task = taskInput.value.trim();
+    if (!currentTitle) return alert("Add a title first!");
+    if (!task) return alert("Enter a task!");
 
-    if (taskInput.value.trim() !== "" && currentTitle !== '') {
-        let group = document.getElementById(currentTitle); 
-        let li = document.createElement('li');
-        li.textContent = taskInput.value; 
+    taskData[currentTitle].push(task);
 
-        group.querySelector('ul').appendChild(li);
+    const li = document.createElement('li');
+    li.textContent = task;
 
-        taskInput.value = "";
-    } else if (currentTitle === '') {
-        alert("Please add a group title first!");
-    } else {
-        alert("Please enter a task!");
-    }
+    // Create Edit and Delete buttons
+    const editButton = document.createElement('button');
+    editButton.textContent = 'Edit';
+    editButton.className = 'editBtn';
+    
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete';
+    deleteButton.className = 'deleteBtn';
+
+    // Append buttons to the task
+    li.appendChild(editButton);
+    li.appendChild(deleteButton);
+
+    get(currentTitle).querySelector('ul').appendChild(li);
+    taskInput.value = '';
+
+    // Edit button functionality
+    editButton.addEventListener('click', () => {
+        const newTask = prompt('Edit task:', task);
+        if (newTask !== null && newTask.trim() !== '') {
+            li.textContent = newTask;
+            li.appendChild(editButton);
+            li.appendChild(deleteButton);  // Re-append the buttons
+        }
+    });
+
+    // Delete button functionality
+    deleteButton.addEventListener('click', () => {
+        taskData[currentTitle] = taskData[currentTitle].filter(t => t !== task); // Remove from taskData array
+        li.remove();  // Remove task from DOM
+    });
 });
